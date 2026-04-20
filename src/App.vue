@@ -2,7 +2,7 @@
   <div class="app-shell">
     <header class="topbar">
       <div class="nav-container">
-        <h1 class="logo">Prime Shows</h1>
+        <h1 class="logo" @click="goHome">Prime Shows</h1>
         <div class="search-container">
           <div class="search-wrapper">
             <InputText
@@ -76,6 +76,12 @@ export default {
     const showPopper = ref(false);
     const { searchQuery, searchResults, loading, runSearch } = useShows();
 
+    // Initialize searchQuery from URL on page load
+    const currentRoute = router.currentRoute.value;
+    if (currentRoute.path === "/search" && currentRoute.query.q) {
+      searchQuery.value = currentRoute.query.q;
+    }
+
     // Debounced search function
     let searchTimeout = null;
     function debouncedSearch() {
@@ -107,11 +113,17 @@ export default {
       showPopper.value = false;
     }
 
+    function goHome() {
+      router.push("/");
+    }
+
     // Sync search input with route query
     watch(
       () => router.currentRoute.value,
       (newRoute) => {
-        if (newRoute.path !== "/search") {
+        if (newRoute.path === "/search") {
+          searchQuery.value = newRoute.query.q || "";
+        } else {
           searchQuery.value = "";
         }
       },
@@ -126,6 +138,7 @@ export default {
       loading,
       debouncedSearch,
       selectShow,
+      goHome,
     };
   },
 };
@@ -176,6 +189,7 @@ body {
   font-size: 1.8rem;
   color: #ffffff;
   font-weight: bold;
+  cursor: pointer;
 }
 
 .search-container {
